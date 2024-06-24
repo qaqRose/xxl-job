@@ -20,6 +20,7 @@ import java.util.List;
 
 /**
  * Created by xuxueli on 17/5/10.
+ * 客户端接口
  */
 @Controller
 @RequestMapping("/api")

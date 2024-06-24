@@ -146,6 +146,11 @@ public class JobRegistryHelper {
 
 	// ---------------------- helper ----------------------
 
+	/**
+	 * 客户端注册
+	 * @param registryParam
+	 * @return
+	 */
 	public ReturnT<String> registry(RegistryParam registryParam) {
 
 		// valid

@@ -26,6 +26,11 @@ public class LoginService {
     private XxlJobUserDao xxlJobUserDao;
 
 
+    /**
+     * 用户实体转成字符串token
+     * @param xxlJobUser
+     * @return
+     */
     private String makeToken(XxlJobUser xxlJobUser){
         String tokenJson = JacksonUtil.writeValueAsString(xxlJobUser);
         String tokenHex = new BigInteger(tokenJson.getBytes()).toString(16);

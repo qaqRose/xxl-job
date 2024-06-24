@@ -16,6 +16,7 @@ public interface AdminBiz {
 
     /**
      * callback
+     * 客户端执行完任务回调
      *
      * @param callbackParamList
      * @return
