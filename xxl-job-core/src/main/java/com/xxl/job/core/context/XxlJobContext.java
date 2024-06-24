@@ -47,6 +47,7 @@ public class XxlJobContext {
 
     /**
      * handleCode：The result status of job execution
+     * 任务执行接口结果, 就这三种
      *
      *      200 : success
      *      500 : fail
@@ -57,6 +58,7 @@ public class XxlJobContext {
 
     /**
      * handleMsg：The simple log msg of job execution
+     * 处理结果信息
      */
     private String handleMsg;
 

@@ -84,6 +84,7 @@ public class ExecutorRegistryThread {
                 }
 
                 // registry remove
+                // spring bean销毁时,会自动取消注册,让调度中心更加快速感知到执行器下线
                 try {
                     RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appname, address);
                     for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {

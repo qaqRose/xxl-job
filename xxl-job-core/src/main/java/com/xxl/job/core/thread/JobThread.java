@@ -21,6 +21,7 @@ import java.util.concurrent.*;
 
 
 /**
+ * 执行器线程
  * handler thread
  * @author xuxueli 2016-1-16 19:52:47
  */
@@ -30,6 +31,9 @@ public class JobThread extends Thread{
 	private int jobId;
 	private IJobHandler handler;
 	private LinkedBlockingQueue<TriggerParam> triggerQueue;
+
+
+	// 维护一份调用id的集合
 	private Set<Long> triggerLogIdSet;		// avoid repeat trigger for the same TRIGGER_LOG_ID
 
 	private volatile boolean toStop = false;
@@ -111,6 +115,7 @@ public class JobThread extends Thread{
             TriggerParam triggerParam = null;
             try {
 				// to check toStop signal, we need cycle, so wo cannot use queue.take(), instand of poll(timeout)
+				// 因为要检查是否停止(toStop) 所以需要循环, 也就没有使用queue.take方式获取, 使用poll+超时方式
 				triggerParam = triggerQueue.poll(3L, TimeUnit.SECONDS);
 				if (triggerParam!=null) {
 					running = true;
@@ -127,11 +132,16 @@ public class JobThread extends Thread{
 							triggerParam.getBroadcastTotal());
 
 					// init job context
+					// 设置到 thread local里面
+					// 因为有可能使用异步来执行,所以这里用tl来做线程间通信
 					XxlJobContext.setXxlJobContext(xxlJobContext);
 
 					// execute
 					XxlJobHelper.log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + xxlJobContext.getJobParam());
 
+					// 是否配置超时
+					// 没有配置 就直接执行了
+					// 有配置的话 再开一个子线程去执行,然后使用超时获取方式并处理超时异常
 					if (triggerParam.getExecutorTimeout() > 0) {
 						// limit timeout
 						Thread futureThread = null;
@@ -171,6 +181,7 @@ public class JobThread extends Thread{
 						XxlJobHelper.handleFail("job handle result lost.");
 					} else {
 						String tempHandleMsg = XxlJobContext.getXxlJobContext().getHandleMsg();
+						// 处理相信过长截断
 						tempHandleMsg = (tempHandleMsg!=null&&tempHandleMsg.length()>50000)
 								?tempHandleMsg.substring(0, 50000).concat("...")
 								:tempHandleMsg;
@@ -205,6 +216,7 @@ public class JobThread extends Thread{
 			} finally {
                 if(triggerParam != null) {
                     // callback handler info
+					// 任务执行结果保存到回调线程的队列中,等待时机回调
                     if (!toStop) {
                         // commonm
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
