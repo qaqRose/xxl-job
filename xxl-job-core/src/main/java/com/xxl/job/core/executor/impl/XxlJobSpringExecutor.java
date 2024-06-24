@@ -77,6 +77,10 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         }
     }*/
 
+    /**
+     * 扫描所有 @XxlJob 注解方法
+     * 注册到 父类的map变量中
+     */
     private void initJobHandlerMethodRepository(ApplicationContext applicationContext) {
         if (applicationContext == null) {
             return;

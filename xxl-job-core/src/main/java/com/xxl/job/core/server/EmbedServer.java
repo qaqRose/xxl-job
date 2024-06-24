@@ -24,7 +24,7 @@ import java.util.concurrent.*;
 
 /**
  * Copy from : https://github.com/xuxueli/xxl-rpc
- *
+ * Netty http 服务器
  * @author xuxueli 2020-04-11 21:25
  */
 public class EmbedServer {
@@ -59,6 +59,7 @@ public class EmbedServer {
                                 throw new RuntimeException("xxl-job, EmbedServer bizThreadPool is EXHAUSTED!");
                             }
                         });
+
                 try {
                     // start server
                     ServerBootstrap bootstrap = new ServerBootstrap();

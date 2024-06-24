@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by xuxueli on 17/3/2.
+ * 执行器注册线程
  */
 public class ExecutorRegistryThread {
     private static Logger logger = LoggerFactory.getLogger(ExecutorRegistryThread.class);
@@ -35,6 +36,11 @@ public class ExecutorRegistryThread {
             return;
         }
 
+        /**
+         * 注册线程
+         * 每30秒钟向所有调度中心(admin)注册自身执行器
+         * 参数是 应用名称(配置) 和 地址(配置或自动获取)
+         */
         registryThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -45,6 +51,7 @@ public class ExecutorRegistryThread {
                         RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appname, address);
                         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
                             try {
+                                // 发送请求到调用中心(admin)注册
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
                                 if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
                                     registryResult = ReturnT.SUCCESS;

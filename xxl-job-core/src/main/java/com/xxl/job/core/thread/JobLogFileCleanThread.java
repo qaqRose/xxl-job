@@ -75,6 +75,7 @@ public class JobLogFileCleanThread {
                                 }
 
                                 if ((todayDate.getTime()-logFileCreateDate.getTime()) >= logRetentionDays * (24 * 60 * 60 * 1000) ) {
+                                    // 递归删除文件
                                     FileUtil.deleteRecursively(childFile);
                                 }
 

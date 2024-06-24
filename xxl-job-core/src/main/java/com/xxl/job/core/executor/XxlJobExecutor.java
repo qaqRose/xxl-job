@@ -65,22 +65,35 @@ public class XxlJobExecutor  {
 
 
     // ---------------------- start + stop ----------------------
+
+    /**
+     * 执行器初始化
+     *
+     * @throws Exception
+     */
     public void start() throws Exception {
 
         // init logpath
+        // 初始化文件目录
+        // 包含系统日志和glue脚本目录
         XxlJobFileAppender.initLogPath(logPath);
 
         // init invoker, admin-client
+        // 初始化调度中心示例(多个地址用逗号分割)
         initAdminBizList(adminAddresses, accessToken);
 
 
         // init JobLogFileCleanThread
+        // 清理超过时间保存范围的文件 (每天执行一次)
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
         // init TriggerCallbackThread
+        // 回调处理  有正常回调和失败回调
         TriggerCallbackThread.getInstance().start();
 
         // init executor-server
+        // 启动内置的http服务器
+        // 启动完之后, 启动注册线程(固定向调度中心发请求)
         initEmbedServer(address, ip, port, appname, accessToken);
     }
 
@@ -143,6 +156,7 @@ public class XxlJobExecutor  {
     private void initEmbedServer(String address, String ip, int port, String appname, String accessToken) throws Exception {
 
         // fill ip port
+        // 如果没有配置端口,就从9999端口开始,递增寻找可用端口(全部不可用再递减找)
         port = port>0?port: NetUtil.findAvailablePort(9999);
         ip = (ip!=null&&ip.trim().length()>0)?ip: IpUtil.getIp();
 
@@ -175,6 +189,11 @@ public class XxlJobExecutor  {
 
 
     // ---------------------- job handler repository ----------------------
+    /**
+     * 保存所有的执行任务
+     * key: 任务名称,  XxlJob注解上的value
+     * value:  任务处理器, 反射获取到的一些method
+     */
     private static ConcurrentMap<String, IJobHandler> jobHandlerRepository = new ConcurrentHashMap<String, IJobHandler>();
     public static IJobHandler loadJobHandler(String name){
         return jobHandlerRepository.get(name);
@@ -183,6 +202,13 @@ public class XxlJobExecutor  {
         logger.info(">>>>>>>>>>> xxl-job register jobhandler success, name:{}, jobHandler:{}", name, jobHandler);
         return jobHandlerRepository.put(name, jobHandler);
     }
+
+    /**
+     * 注册 @XxlJob 注解方法
+     * @param xxlJob
+     * @param bean
+     * @param executeMethod
+     */
     protected void registJobHandler(XxlJob xxlJob, Object bean, Method executeMethod){
         if (xxlJob == null) {
             return;

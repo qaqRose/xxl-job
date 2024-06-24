@@ -2,6 +2,11 @@ package com.xxl.job.core.handler;
 
 /**
  * job handler
+ * 任务处理器
+ * 对应任务的三个周期
+ * 1. 初始化
+ * 2. 执行
+ * 3. 销毁
  *
  * @author xuxueli 2015-12-19 19:06:38
  */

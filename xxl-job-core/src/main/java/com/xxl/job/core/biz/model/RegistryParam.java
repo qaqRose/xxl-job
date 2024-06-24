@@ -8,7 +8,15 @@ import java.io.Serializable;
 public class RegistryParam implements Serializable {
     private static final long serialVersionUID = 42L;
 
+    /**
+     * 分组
+     */
     private String registryGroup;
+
+    /**
+     * 注册key
+     * 执行器: 应用名称
+     */
     private String registryKey;
     private String registryValue;
 
