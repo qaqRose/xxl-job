@@ -14,7 +14,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * 权限拦截
- *
+ *  1. 判断接口是否需要登录或者管理员权限
+ *  2. 需要登录的话, 从cookie中解析出用户实体
+ *  3. 设置到request的attribute中,供业务使用
  * @author xuxueli 2015-12-12 18:09:04
  */
 @Component
@@ -50,6 +52,7 @@ public class PermissionInterceptor implements AsyncHandlerInterceptor {
 			if (needAdminuser && loginUser.getRole()!=1) {
 				throw new RuntimeException(I18nUtil.getString("system_permission_limit"));
 			}
+
 			request.setAttribute(LoginService.LOGIN_IDENTITY_KEY, loginUser);
 		}
 

@@ -4,11 +4,14 @@ import com.xxl.job.admin.core.util.I18nUtil;
 
 /**
  * trigger type enum
- *
+ * 任务调度类型
  * @author xuxueli 2018-09-16 04:56:41
  */
 public enum TriggerTypeEnum {
 
+    /**
+     * 手动,管理业务上的执行一次
+     */
     MANUAL(I18nUtil.getString("jobconf_trigger_type_manual")),
     CRON(I18nUtil.getString("jobconf_trigger_type_cron")),
     RETRY(I18nUtil.getString("jobconf_trigger_type_retry")),

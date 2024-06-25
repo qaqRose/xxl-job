@@ -80,6 +80,7 @@ public class JobTriggerPoolHelper {
         // choose thread pool
         ThreadPoolExecutor triggerPool_ = fastTriggerPool;
         AtomicInteger jobTimeoutCount = jobTimeoutCountMap.get(jobId);
+        // 超过10次以上超时,使用慢线程池执行
         if (jobTimeoutCount!=null && jobTimeoutCount.get() > 10) {      // job-timeout 10 times in 1 min
             triggerPool_ = slowTriggerPool;
         }
@@ -134,6 +135,7 @@ public class JobTriggerPoolHelper {
     }
 
     /**
+     * 任务调度
      * @param jobId
      * @param triggerType
      * @param failRetryCount

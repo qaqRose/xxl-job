@@ -31,7 +31,7 @@ public class JobApiController {
 
     /**
      * api
-     *
+     * 处理客户端的执行回调/注册/取消注册的接口
      * @param uri
      * @param data
      * @return
@@ -39,7 +39,9 @@ public class JobApiController {
     @RequestMapping("/{uri}")
     @ResponseBody
     @PermissionLimit(limit=false)
-    public ReturnT<String> api(HttpServletRequest request, @PathVariable("uri") String uri, @RequestBody(required = false) String data) {
+    public ReturnT<String> api(HttpServletRequest request,
+                               @PathVariable("uri") String uri,
+                               @RequestBody(required = false) String data) {
 
         // valid
         if (!"POST".equalsIgnoreCase(request.getMethod())) {

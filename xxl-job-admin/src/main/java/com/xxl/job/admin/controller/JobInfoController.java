@@ -132,7 +132,15 @@ public class JobInfoController {
 	public ReturnT<String> start(int id) {
 		return xxlJobService.start(id);
 	}
-	
+
+	/**
+	 * 任务管理 -> 执行一次
+	 * @param request
+	 * @param id
+	 * @param executorParam  执行参数
+	 * @param addressList
+	 * @return
+	 */
 	@RequestMapping("/trigger")
 	@ResponseBody
 	public ReturnT<String> triggerJob(HttpServletRequest request, int id, String executorParam, String addressList) {

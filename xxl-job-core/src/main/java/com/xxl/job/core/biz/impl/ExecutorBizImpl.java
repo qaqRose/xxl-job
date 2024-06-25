@@ -18,12 +18,14 @@ import java.util.Date;
 
 /**
  * Created by xuxueli on 17/3/1.
+ * 执行器客户端实现
  */
 public class ExecutorBizImpl implements ExecutorBiz {
     private static Logger logger = LoggerFactory.getLogger(ExecutorBizImpl.class);
 
     @Override
     public ReturnT<String> beat() {
+        // 类似 ping pong
         return ReturnT.SUCCESS;
     }
 
@@ -118,6 +120,10 @@ public class ExecutorBizImpl implements ExecutorBiz {
             return new ReturnT<String>(ReturnT.FAIL_CODE, "glueType[" + triggerParam.getGlueType() + "] is not valid.");
         }
 
+        // 执行器阻塞策略
+        // 1. 支持单机串行
+        // 2. 丢弃后续调度
+        // 3. 覆盖之前调度
         // executor block strategy
         if (jobThread != null) {
             ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum.match(triggerParam.getExecutorBlockStrategy(), null);
@@ -135,6 +141,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
                 }
             } else {
                 // just queue trigger
+                // 单机串行, 等后面加入到队列即可
             }
         }
 

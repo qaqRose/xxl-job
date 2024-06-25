@@ -79,7 +79,7 @@ public class XxlJobExecutor  {
         XxlJobFileAppender.initLogPath(logPath);
 
         // init invoker, admin-client
-        // 初始化调度中心示例(多个地址用逗号分割)
+        // 初始化调度中心实例(多个地址用逗号分割)
         initAdminBizList(adminAddresses, accessToken);
 
 
@@ -193,6 +193,7 @@ public class XxlJobExecutor  {
      * 保存所有的执行任务
      * key: 任务名称,  XxlJob注解上的value
      * value:  任务处理器, 反射获取到的一些method
+     * 客户端启动的时候, 会把所有的BEAN任务扫描并添加jobHandlerRepository
      */
     private static ConcurrentMap<String, IJobHandler> jobHandlerRepository = new ConcurrentHashMap<String, IJobHandler>();
     public static IJobHandler loadJobHandler(String name){
@@ -266,11 +267,19 @@ public class XxlJobExecutor  {
 
     // ---------------------- job thread repository ----------------------
     private static ConcurrentMap<Integer, JobThread> jobThreadRepository = new ConcurrentHashMap<Integer, JobThread>();
+
+    /**
+     * 注册新的任务线程, 并启动 ()
+     * 如果存在老的, 直接中断停止
+     *
+     */
     public static JobThread registJobThread(int jobId, IJobHandler handler, String removeOldReason){
+        // 任务线程, 立即启动
         JobThread newJobThread = new JobThread(jobId, handler);
         newJobThread.start();
         logger.info(">>>>>>>>>>> xxl-job regist JobThread success, jobId:{}, handler:{}", new Object[]{jobId, handler});
 
+        //
         JobThread oldJobThread = jobThreadRepository.put(jobId, newJobThread);	// putIfAbsent | oh my god, map's put method return the old value!!!
         if (oldJobThread != null) {
             oldJobThread.toStop(removeOldReason);

@@ -22,6 +22,10 @@ import java.util.concurrent.*;
 
 /**
  * 执行器线程
+ * 1. 每个任务类会创建一个JobThread来执行
+ * 2. 多个任务实例会在队列中排队
+ * 3. 在一个无限循环种排队消费
+ * 4. 任务线程可被中断停止, 调度中心手动停止, 或者超过30个空闲时间自动停止, 或者任务类型调整了
  * handler thread
  * @author xuxueli 2016-1-16 19:52:47
  */
@@ -30,16 +34,31 @@ public class JobThread extends Thread{
 
 	private int jobId;
 	private IJobHandler handler;
+
+	/**
+	 * 队列等待队列
+	 * 1. 新增任务会直接往里面插入
+	 * 2.
+	 */
 	private LinkedBlockingQueue<TriggerParam> triggerQueue;
 
 
 	// 维护一份调用id的集合
 	private Set<Long> triggerLogIdSet;		// avoid repeat trigger for the same TRIGGER_LOG_ID
 
+	/**
+	 * toStop
+	 * 任务停止标识, 由其他线程调用方法修改
+	 * 需要对全局可见
+	 */
 	private volatile boolean toStop = false;
 	private String stopReason;
 
     private boolean running = false;    // if running job
+
+	/**
+	 * 统计空闲时间()
+	 */
 	private int idleTimes = 0;			// idel times
 
 
@@ -64,6 +83,7 @@ public class JobThread extends Thread{
      */
 	public ReturnT<String> pushTriggerQueue(TriggerParam triggerParam) {
 		// avoid repeat
+		// 避免任务重复(每个任务job只会执行一次)
 		if (triggerLogIdSet.contains(triggerParam.getLogId())) {
 			logger.info(">>>>>>>>>>> repeate trigger job, logId:{}", triggerParam.getLogId());
 			return new ReturnT<String>(ReturnT.FAIL_CODE, "repeate trigger job, logId:" + triggerParam.getLogId());
@@ -181,7 +201,7 @@ public class JobThread extends Thread{
 						XxlJobHelper.handleFail("job handle result lost.");
 					} else {
 						String tempHandleMsg = XxlJobContext.getXxlJobContext().getHandleMsg();
-						// 处理相信过长截断
+						// 处理信息过长截断
 						tempHandleMsg = (tempHandleMsg!=null&&tempHandleMsg.length()>50000)
 								?tempHandleMsg.substring(0, 50000).concat("...")
 								:tempHandleMsg;
@@ -195,6 +215,9 @@ public class JobThread extends Thread{
 
 				} else {
 					if (idleTimes > 30) {
+						// 超过30个循环周期,任务还没有执行
+						// 避免并发调用造成任务丢失, 移除执行线程
+						// todo: 暂时无法理解并发是怎么丢失任务,
 						if(triggerQueue.size() == 0) {	// avoid concurrent trigger causes jobId-lost
 							XxlJobExecutor.removeJobThread(jobId, "excutor idel times over limit.");
 						}
@@ -238,6 +261,7 @@ public class JobThread extends Thread{
             }
         }
 
+		// 线程被中断或者停止了, 队列中任务直接回调报错
 		// callback trigger request in queue
 		while(triggerQueue !=null && triggerQueue.size()>0){
 			TriggerParam triggerParam = triggerQueue.poll();

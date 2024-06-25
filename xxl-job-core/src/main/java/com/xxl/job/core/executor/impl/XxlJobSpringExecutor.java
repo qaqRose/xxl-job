@@ -28,6 +28,11 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
 
 
     // start
+
+    /**
+     * 在SpringBoot框架实例化之后调用
+     * 1.
+     */
     @Override
     public void afterSingletonsInstantiated() {
 
