@@ -22,12 +22,16 @@ public class XxlJobScheduler  {
 
     public void init() throws Exception {
         // init i18n
+        // 初始化国家化, 通过项目的启动参数配置对应的语言,默认中文
         initI18n();
 
         // admin trigger pool start
+        // 实例化快线程池和慢线程池
         JobTriggerPoolHelper.toStart();
 
         // admin registry monitor run
+        // 初始化 注册和移除注册线程池
+        // 启动 注册监控线程 (一个周期30秒)
         JobRegistryHelper.getInstance().start();
 
         // admin fail-monitor run

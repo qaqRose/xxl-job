@@ -136,6 +136,7 @@ public class JobTriggerPoolHelper {
 
     /**
      * 任务调度
+     * 1. 服务端调度任务的主要入口
      * @param jobId
      * @param triggerType
      * @param failRetryCount

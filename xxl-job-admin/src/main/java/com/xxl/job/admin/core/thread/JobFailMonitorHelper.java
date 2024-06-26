@@ -13,7 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * job monitor instance
- *
+ * 任务监控
+ * 1. 失败重试
  * @author xuxueli 2015-9-1 18:05:56
  */
 public class JobFailMonitorHelper {
