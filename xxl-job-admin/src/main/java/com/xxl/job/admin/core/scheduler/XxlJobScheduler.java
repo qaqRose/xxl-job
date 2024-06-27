@@ -38,12 +38,16 @@ public class XxlJobScheduler  {
         JobFailMonitorHelper.getInstance().start();
 
         // admin lose-monitor run ( depend on JobTriggerPoolHelper )
+        // 丢失状态的任务更新为失败(超过10分钟且执行器下线)
         JobCompleteHelper.getInstance().start();
 
         // admin log report start
+        // 计算统计报表 和 清理日志(删除历史日志)
         JobLogReportHelper.getInstance().start();
 
         // start-schedule  ( depend on JobTriggerPoolHelper )
+        // 任务定时器，不断从数据库取出即将执行的任务，触发执行
+        // 下一次执行时间在5秒内的，放在时间轮，本地判断触发执行
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");

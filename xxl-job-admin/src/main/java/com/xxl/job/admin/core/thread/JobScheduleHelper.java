@@ -76,6 +76,7 @@ public class JobScheduleHelper {
                         // tx start
 
                         // 1、pre read
+                        // 查询5秒范围需要执行的任务
                         long nowTime = System.currentTimeMillis();
                         List<XxlJobInfo> scheduleList = XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().scheduleJobQuery(nowTime + PRE_READ_MS, preReadCount);
                         if (scheduleList!=null && scheduleList.size()>0) {
@@ -88,8 +89,10 @@ public class JobScheduleHelper {
                                     logger.warn(">>>>>>>>>>> xxl-job, schedule misfire, jobId = " + jobInfo.getId());
 
                                     // 1、misfire match
+                                    // 调度过期策略
                                     MisfireStrategyEnum misfireStrategyEnum = MisfireStrategyEnum.match(jobInfo.getMisfireStrategy(), MisfireStrategyEnum.DO_NOTHING);
                                     if (MisfireStrategyEnum.FIRE_ONCE_NOW == misfireStrategyEnum) {
+                                        // 如果为立即执行，则调度一次
                                         // FIRE_ONCE_NOW 》 trigger
                                         JobTriggerPoolHelper.trigger(jobInfo.getId(), TriggerTypeEnum.MISFIRE, -1, null, null, null);
                                         logger.debug(">>>>>>>>>>> xxl-job, schedule push trigger : jobId = " + jobInfo.getId() );
@@ -109,6 +112,7 @@ public class JobScheduleHelper {
                                     refreshNextValidTime(jobInfo, new Date());
 
                                     // next-trigger-time in 5s, pre-read again
+                                    // 5s 内执行第二次
                                     if (jobInfo.getTriggerStatus()==1 && nowTime + PRE_READ_MS > jobInfo.getTriggerNextTime()) {
 
                                         // 1、make ring second
@@ -123,12 +127,15 @@ public class JobScheduleHelper {
                                     }
 
                                 } else {
+                                    // 还没到时间执行
                                     // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
 
                                     // 1、make ring second
+                                    // 下一次执行的秒数
                                     int ringSecond = (int)((jobInfo.getTriggerNextTime()/1000)%60);
 
                                     // 2、push time ring
+                                    // 放置在时间轮
                                     pushTimeRing(ringSecond, jobInfo.getId());
 
                                     // 3、fresh next
@@ -139,6 +146,7 @@ public class JobScheduleHelper {
                             }
 
                             // 3、update trigger info
+                            // 更新任务状态，最后一次执行时间和下一次执行时间
                             for (XxlJobInfo jobInfo: scheduleList) {
                                 XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().scheduleUpdate(jobInfo);
                             }
@@ -157,6 +165,7 @@ public class JobScheduleHelper {
                     } finally {
 
                         // commit
+                        // 事务提交
                         if (conn != null) {
                             try {
                                 conn.commit();
@@ -236,6 +245,7 @@ public class JobScheduleHelper {
                     try {
                         // second data
                         List<Integer> ringItemData = new ArrayList<>();
+                        // 当前秒数， 上面休眠不到一秒，这里取两秒的数据
                         int nowSecond = Calendar.getInstance().get(Calendar.SECOND);   // 避免处理耗时太长，跨过刻度，向前校验一个刻度；
                         for (int i = 0; i < 2; i++) {
                             List<Integer> tmpData = ringData.remove( (nowSecond+60-i)%60 );
@@ -355,6 +365,14 @@ public class JobScheduleHelper {
 
 
     // ---------------------- tools ----------------------
+
+    /**
+     * 计算下一次执行的日期
+     * @param jobInfo
+     * @param fromTime
+     * @return
+     * @throws Exception
+     */
     public static Date generateNextValidTime(XxlJobInfo jobInfo, Date fromTime) throws Exception {
         ScheduleTypeEnum scheduleTypeEnum = ScheduleTypeEnum.match(jobInfo.getScheduleType(), null);
         if (ScheduleTypeEnum.CRON == scheduleTypeEnum) {
